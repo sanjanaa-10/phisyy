@@ -457,7 +457,7 @@ Users should always verify suspicious websites independently.
 
 # 👩‍💻 Author
 
-**Sanjana V Hathwar**
+**Sanjana**
 
 Computer Science & Engineering
 
