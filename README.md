@@ -1,40 +1,91 @@
-# 🐟 Phisyy
+# Phisyy
 
-### ML-Powered Browser Phishing Detection Extension
+## ML-Powered Browser Phishing Detection Extension
 
 Phisyy is a Chrome browser security extension that analyzes websites in real time and identifies potentially suspicious or phishing pages using machine learning.
 
-It combines **XGBoost-based classification**, **URL/webpage security features**, and **SHAP explainability** to provide an interpretable risk assessment directly inside the browser.
+The system combines an XGBoost classification model, URL and webpage-derived security features, a FastAPI inference backend, and SHAP-based explainability to provide an interpretable website risk assessment directly inside the browser.
 
 ---
 
-## 🚨 Why Phisyy?
+## Overview
 
-Phishing websites can look almost identical to legitimate websites.
+Phishing websites are designed to appear similar to legitimate websites and can be difficult for users to identify through visual inspection alone.
 
-Instead of relying only on blacklists, Phisyy analyzes multiple characteristics of a website and produces a risk assessment:
+Phisyy approaches phishing detection as a machine-learning classification problem. It extracts security-related characteristics from the current website, processes them through a trained XGBoost model, and converts the prediction into a risk assessment.
 
-- 🟢 **LOW RISK**
-- 🟡 **MEDIUM RISK**
-- 🔴 **HIGH RISK**
+The extension provides:
 
-The extension also provides security signals that help explain why a website received a particular risk assessment.
+- Website risk classification
+- Phishing probability
+- Legitimate probability
+- Threat score
+- Security signals
+- SHAP-based explainability
+- Recent scan history
+- Browser security notifications
 
 ---
 
-## ✨ Features
+## Problem Statement
 
-### 🔍 Real-Time Website Analysis
+Users frequently encounter websites that may look legitimate while containing characteristics associated with phishing or suspicious behavior.
 
-Analyzes the currently opened website and generates a phishing risk assessment.
+A practical phishing detection system should be able to:
 
-### 🤖 Machine Learning Detection
+1. Analyze characteristics of the current website.
+2. Identify potentially suspicious patterns.
+3. Produce an understandable risk assessment.
+4. Provide supporting security signals.
+5. Present the result directly inside the browser.
 
-Uses an **XGBoost binary classification model** for phishing/legitimate website prediction.
+Phisyy addresses these requirements through a Chrome extension connected to a machine-learning inference backend.
 
-### 📊 22 Security Features
+---
 
-The model uses URL and webpage-derived security characteristics including:
+## Solution
+
+Phisyy consists of two primary components.
+
+### Browser Extension
+
+The Chrome extension is responsible for:
+
+- Identifying the active website.
+- Collecting relevant URL and webpage information.
+- Communicating with the backend API.
+- Displaying the prediction.
+- Displaying security signals.
+- Maintaining recent scan information.
+- Providing browser security notifications.
+
+### Machine Learning Backend
+
+The FastAPI backend is responsible for:
+
+- Receiving website security features.
+- Processing the feature vector.
+- Applying the trained feature scaler.
+- Performing XGBoost inference.
+- Calculating prediction probabilities.
+- Generating a threat score.
+- Producing SHAP-based explanation information.
+
+---
+
+# Key Features
+
+## Real-Time Website Analysis
+
+Phisyy analyzes the currently opened website and generates a phishing risk assessment through the browser extension.
+
+## Machine Learning Classification
+
+The backend uses an XGBoost binary classification model to distinguish between legitimate and potentially phishing websites.
+
+## 22 Security Features
+
+The system uses URL and webpage-derived security characteristics including:
 
 - URL length
 - Domain length
@@ -58,21 +109,27 @@ The model uses URL and webpage-derived security characteristics including:
 - Letter-to-digit ratio
 - Redirect indicators
 
-### 🧠 Explainable AI
+These features are extracted and arranged according to the model's expected feature order before inference.
 
-Phisyy integrates **SHAP** to provide explanations for model predictions and identify important security signals.
+## Threat Scoring
 
-### ⚠️ Risk Scoring
+The phishing probability is converted into a threat score between 0 and 100.
 
-The phishing probability is converted into a threat score from **0–100**.
-
-| Threat Score | Risk |
+| Threat Score | Risk Level |
 |---:|---|
-| 0–29 | 🟢 LOW |
-| 30–69 | 🟡 MEDIUM |
-| 70–100 | 🔴 HIGH |
+| 0–29 | LOW |
+| 30–69 | MEDIUM |
+| 70–100 | HIGH |
 
-### 📋 Security Dashboard
+The score is intended to provide an easy-to-understand indication of the model's phishing prediction.
+
+## Explainable AI
+
+Phisyy integrates SHAP-based explainability to provide information about the security signals influencing individual predictions.
+
+This makes the system more interpretable than presenting only a phishing or legitimate label.
+
+## Security Dashboard
 
 The browser popup displays:
 
@@ -82,71 +139,156 @@ The browser popup displays:
 - Legitimate probability
 - Phishing probability
 - Security signals
-- Recent scan history
+- Recent scans
 
-### 🔔 Browser Security Alerts
+## Browser Security Notifications
 
-Suspicious websites can trigger an in-page Phisyy security notification with options to review the result or close the suspicious tab.
+The extension can display browser notifications when a suspicious website is detected, allowing the user to review the assessment.
 
 ---
 
-## 🏗️ Architecture
+# System Architecture
 
 ```text
-                 ┌──────────────────────┐
-                 │      Web Browser     │
-                 │       Chrome         │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │   Phisyy Extension   │
-                 │                      │
-                 │ Popup + Background   │
-                 │ Security Monitoring  │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │  Feature Extraction  │
-                 │                      │
-                 │ URL + Webpage Data   │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │     FastAPI API      │
-                 │                      │
-                 │   Model Inference    │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │    XGBoost Model     │
-                 │                      │
-                 │ Phishing Prediction  │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │ SHAP Explainability  │
-                 │                      │
-                 │ Security Signals     │
-                 └──────────┬───────────┘
-                            │
-                            ▼
-                 ┌──────────────────────┐
-                 │   Risk Assessment    │
-                 │                      │
-                 │ LOW / MEDIUM / HIGH  │
-                 └──────────────────────┘
+                    Chrome Browser
+                          |
+                          v
+              +-----------------------+
+              |   Phisyy Extension    |
+              |                       |
+              | Popup + Background    |
+              | Security Monitoring   |
+              +-----------+-----------+
+                          |
+                          v
+              +-----------------------+
+              | Feature Extraction    |
+              |                       |
+              | URL + Webpage Data    |
+              +-----------+-----------+
+                          |
+                          v
+              +-----------------------+
+              |     FastAPI API       |
+              |                       |
+              |  Model Inference      |
+              +-----------+-----------+
+                          |
+                          v
+              +-----------------------+
+              |    XGBoost Model      |
+              |                       |
+              | Phishing Prediction   |
+              +-----------+-----------+
+                          |
+                          v
+              +-----------------------+
+              |  SHAP Explainability  |
+              |                       |
+              | Security Signals      |
+              +-----------+-----------+
+                          |
+                          v
+              +-----------------------+
+              |   Risk Assessment     |
+              |                       |
+              | LOW / MEDIUM / HIGH   |
+              +-----------------------+
 ```
 
 ---
 
-## 🛠️ Technology Stack
+# Machine Learning Pipeline
 
-### Browser Extension
+```text
+Website
+   |
+   v
+Feature Extraction
+   |
+   v
+22 Security Features
+   |
+   v
+Feature Scaling
+   |
+   v
+XGBoost Classification
+   |
+   +-------------------+
+   |                   |
+   v                   v
+Legitimate          Phishing
+Probability         Probability
+   |                   |
+   +---------+---------+
+             |
+             v
+       Threat Score
+             |
+             v
+      Risk Classification
+             |
+             v
+       SHAP Explanation
+             |
+             v
+       Browser Dashboard
+```
+
+---
+
+# How the System Works
+
+## Step 1: Website Identification
+
+The browser extension identifies the currently active website.
+
+## Step 2: Feature Extraction
+
+URL and webpage-derived security characteristics are collected from the current website.
+
+## Step 3: Feature Processing
+
+The extracted values are arranged according to the model's expected feature order.
+
+The stored scaler is then applied to prepare the feature vector for model inference.
+
+## Step 4: Model Inference
+
+The processed feature vector is passed to the trained XGBoost classifier.
+
+## Step 5: Probability Calculation
+
+The model generates class probabilities representing the predicted likelihood of the website belonging to each class.
+
+## Step 6: Threat Score
+
+The phishing probability is converted into a threat score between 0 and 100.
+
+## Step 7: Risk Classification
+
+The threat score is mapped to one of three risk levels:
+
+```text
+0–29     LOW
+30–69    MEDIUM
+70–100   HIGH
+```
+
+## Step 8: Explainability
+
+SHAP is used to provide information about the security signals influencing the prediction.
+
+## Step 9: Browser Presentation
+
+The final assessment is returned to the browser extension and displayed through the Phisyy interface.
+
+---
+
+# Technology Stack
+
+## Browser Extension
 
 - JavaScript
 - HTML
@@ -154,13 +296,13 @@ Suspicious websites can trigger an in-page Phisyy security notification with opt
 - Chrome Extension API
 - Manifest V3
 
-### Backend
+## Backend
 
 - Python
 - FastAPI
 - Pydantic
 
-### Machine Learning
+## Machine Learning
 
 - XGBoost
 - Scikit-learn
@@ -168,7 +310,7 @@ Suspicious websites can trigger an in-page Phisyy security notification with opt
 - Joblib
 - Pandas
 
-### Development
+## Development Tools
 
 - Git
 - GitHub
@@ -176,36 +318,36 @@ Suspicious websites can trigger an in-page Phisyy security notification with opt
 
 ---
 
-## 📁 Project Structure
+# Project Structure
 
 ```text
 Phisyy/
-│
-├── backend/
-│   ├── app.py
-│   ├── url_feature_extractor.py
-│   ├── xgb_model.json
-│   ├── scaler.pkl
-│   └── requirements.txt
-│
-├── Frontend/
-│   ├── manifest.json
-│   ├── background.js
-│   ├── popup.html
-│   ├── popup.js
-│   └── styles.css
-│
-├── README.md
-└── .gitignore
+|
++-- backend/
+|   +-- app.py
+|   +-- url_feature_extractor.py
+|   +-- xgb_model.json
+|   +-- scaler.pkl
+|   +-- requirements.txt
+|
++-- Frontend/
+|   +-- manifest.json
+|   +-- background.js
+|   +-- popup.html
+|   +-- popup.js
+|   +-- styles.css
+|
++-- README.md
++-- .gitignore
 ```
 
 ---
 
-# 🚀 Installation & Usage
+# Installation
 
 ## Prerequisites
 
-Make sure you have:
+Make sure the following are installed:
 
 - Google Chrome
 - Python 3.x
@@ -226,7 +368,7 @@ cd phisyy
 
 ## 2. Install Backend Dependencies
 
-Navigate to the backend folder:
+Navigate to the backend directory:
 
 ```bash
 cd backend
@@ -240,121 +382,149 @@ pip install -r requirements.txt
 
 ---
 
-## 3. Start the Phisyy Backend
+## 3. Start the Backend
 
-Run:
+Run the FastAPI application:
 
 ```bash
 python -m uvicorn app:app --port 8000
 ```
 
-You should see:
-
-```text
-Uvicorn running on http://127.0.0.1:8000
-```
-
-**Keep this terminal running while using Phisyy.**
-
----
-
-## 4. Install the Chrome Extension
-
-Open Google Chrome and go to:
-
-```text
-chrome://extensions
-```
-
-Then:
-
-1. Enable **Developer mode**.
-2. Click **Load unpacked**.
-3. Open the cloned `phisyy` project folder.
-4. Select the **`Frontend`** folder.
-
-Your project should look like:
-
-```text
-phisyy/
-├── backend/
-└── Frontend/
-```
-
-⚠️ **Select `Frontend`, not the main `phisyy` folder.**
-
----
-
-## 5. Pin Phisyy
-
-Click the **Extensions 🧩** button in Chrome.
-
-Find **Phisyy** and click the **Pin 📌** button.
-
----
-
-## 6. Scan a Website
-
-Open a website in Chrome.
-
-Click the **Phisyy** extension icon.
-
-Phisyy will analyze the website and display:
-
-- 🟢 LOW RISK
-- 🟡 MEDIUM RISK
-- 🔴 HIGH RISK
-- Threat score
-- Legitimate probability
-- Phishing probability
-- Security signals
-- Recent scan history
-
----
-
-## 7. View Security Signals
-
-The popup provides security signals associated with the website analysis.
-
-These signals help the user understand characteristics that may contribute to the risk assessment.
-
----
-
-## 8. Keep the Backend Running
-
-The backend at:
+The backend should start at:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-must remain running while using the extension.
+You should see a message similar to:
 
-If the backend is stopped, Phisyy cannot perform the ML analysis.
+```text
+Uvicorn running on http://127.0.0.1:8000
+```
+
+Keep this terminal running while using the extension.
 
 ---
 
-# 🧪 Quick Test
+# Chrome Extension Setup
 
-After installation:
+## 1. Open Chrome Extensions
+
+Open Google Chrome and navigate to:
+
+```text
+chrome://extensions
+```
+
+## 2. Enable Developer Mode
+
+Turn on:
+
+```text
+Developer mode
+```
+
+## 3. Load the Extension
+
+Select:
+
+```text
+Load unpacked
+```
+
+Navigate to the cloned Phisyy project and select:
+
+```text
+Phisyy/Frontend
+```
+
+Important:
+
+Select the `Frontend` directory, not the main `Phisyy` directory.
+
+The project should contain:
+
+```text
+Phisyy/
+|
++-- backend/
+|
++-- Frontend/
+```
+
+## 4. Pin Phisyy
+
+Open the Chrome Extensions menu and pin Phisyy to the browser toolbar.
+
+---
+
+# Usage
+
+## 1. Start the Backend
+
+Make sure the FastAPI backend is running:
+
+```text
+http://127.0.0.1:8000
+```
+
+## 2. Open a Website
+
+Navigate to a website in Chrome.
+
+## 3. Open Phisyy
+
+Click the Phisyy extension icon from the Chrome toolbar.
+
+## 4. Wait for Analysis
+
+Phisyy analyzes the website and sends the extracted information to the local ML backend.
+
+## 5. Review the Result
+
+The popup displays:
+
+- Risk level
+- Threat score
+- Legitimate probability
+- Phishing probability
+- Security signals
+- Recent scan information
+
+---
+
+# Quick Test
+
+The basic workflow is:
 
 ```text
 Start FastAPI Backend
-        ↓
+        |
+        v
 Open Chrome
-        ↓
+        |
+        v
 Load Phisyy Extension
-        ↓
+        |
+        v
 Open a Website
-        ↓
+        |
+        v
 Click Phisyy
-        ↓
-View Risk Assessment
+        |
+        v
+Website Analysis
+        |
+        v
+Risk Assessment
+        |
+        v
+Review Security Signals
 ```
 
 ---
 
-## 📊 Example Result
+# Example Output
 
 ```text
 PHISYY
@@ -362,7 +532,7 @@ PHISYY
 Current Website
 https://example.com
 
-🟡 MEDIUM RISK
+MEDIUM RISK
 
 Threat Score
 50.2 / 100
@@ -374,64 +544,95 @@ Phishing Probability
 50.2%
 
 Security Signals
-✓ HTTPS connection
-⚠ Long URL
-⚠ External references
+HTTPS connection
+Long URL
+External references
 ```
 
-> The values above are an example of the interface format and are not a claimed model accuracy or benchmark.
+The values shown above are an example of the interface format and are not claimed model performance metrics.
 
 ---
 
-# 🔄 How Phisyy Works
+# Backend API
 
-### 1. Website Detection
+The backend is implemented using FastAPI and provides the inference layer used by the browser extension.
 
-Phisyy identifies the currently opened website in Chrome.
-
-### 2. Feature Extraction
-
-URL and webpage-derived security characteristics are collected.
-
-### 3. Feature Processing
-
-The extracted features are arranged according to the model's expected feature order and processed for inference.
-
-### 4. Machine Learning Prediction
-
-The processed features are passed to the XGBoost model.
-
-### 5. Probability Estimation
-
-The model output is used to determine:
-
-- Legitimate probability
-- Phishing probability
-- Threat score
-
-### 6. Risk Classification
-
-The threat score is mapped to:
+The local API runs at:
 
 ```text
-0–29     → LOW
-30–69    → MEDIUM
-70–100   → HIGH
+http://127.0.0.1:8000
 ```
 
-### 7. Explainability
+The backend accepts processed website security information and returns the model's prediction and associated risk information.
 
-SHAP is used to provide interpretable information about the model prediction.
+The inference pipeline includes:
 
-### 8. Browser Result
-
-The final assessment is displayed through the Phisyy browser interface and security alerts.
+```text
+Input Features
+      |
+      v
+Feature Validation
+      |
+      v
+Feature Scaling
+      |
+      v
+XGBoost Prediction
+      |
+      v
+Prediction Probabilities
+      |
+      v
+Threat Score
+      |
+      v
+Risk Classification
+      |
+      v
+Explainability
+```
 
 ---
 
-# 🔐 Security Approach
+# Risk Assessment
 
-Phisyy uses multiple website characteristics rather than relying on a single signal.
+Phisyy uses the phishing probability to calculate a threat score.
+
+The current risk mapping is:
+
+| Score Range | Classification |
+|---:|---|
+| 0–29 | LOW |
+| 30–69 | MEDIUM |
+| 70–100 | HIGH |
+
+The risk classification is designed as a user-facing interpretation of the model output.
+
+It should not be interpreted as a guarantee that a website is safe or malicious.
+
+---
+
+# Explainability
+
+A key component of Phisyy is the use of SHAP-based explainability.
+
+Instead of returning only:
+
+```text
+PHISHING
+```
+
+the system can provide information about the security signals associated with the prediction.
+
+This allows the system to communicate not only the classification but also supporting information about the model decision.
+
+The explainability layer is intended to make the machine-learning output easier for users and developers to interpret.
+
+---
+
+# Security Approach
+
+Phisyy combines multiple website characteristics rather than relying on a single indicator.
 
 The project demonstrates the integration of:
 
@@ -440,26 +641,84 @@ The project demonstrates the integration of:
 - Feature Engineering
 - Explainable AI
 - Browser Extension Development
-- API Development
+- REST API Development
 - Real-Time Threat Analysis
+- Model Inference
+- Risk Scoring
 
 ---
 
-# ⚠️ Disclaimer
+# Limitations
+
+Phisyy has several limitations that should be considered.
+
+### Model Dependency
+
+The quality of predictions depends on the trained model and the characteristics represented by its training data.
+
+### False Positives and False Negatives
+
+Machine-learning classification can produce incorrect predictions.
+
+### Local Backend
+
+The current implementation requires the FastAPI backend to be running locally.
+
+### No Guaranteed Detection
+
+A low-risk result does not guarantee that a website is safe, and a high-risk result does not by itself prove malicious intent.
+
+### Dataset Availability
+
+The current repository contains the trained model and inference pipeline but does not provide a complete training/evaluation dataset or verified benchmark metrics.
+
+For this reason, no accuracy percentage is claimed in this repository.
+
+---
+
+# Future Improvements
+
+Potential improvements include:
+
+- Cloud-hosted inference
+- Automated threat-intelligence integration
+- Larger and continuously updated datasets
+- Additional domain and webpage features
+- Model performance monitoring
+- Improved webpage content analysis
+- Automated model retraining
+- Chrome Web Store distribution
+- Improved phishing URL intelligence
+- Historical analytics
+- Centralized security reporting
+
+---
+
+# Security Considerations
+
+Phisyy is intended as a machine-learning-assisted security tool.
+
+The output should be treated as an additional security signal rather than a definitive security verdict.
+
+Users should avoid entering credentials, payment information, or other sensitive information into suspicious websites.
+
+---
+
+# Disclaimer
 
 Phisyy is an educational and research-oriented cybersecurity project.
 
 Machine-learning predictions should not be treated as a guarantee that a website is safe or malicious.
 
-Users should always verify suspicious websites independently.
+Users should independently verify suspicious websites before entering sensitive information.
 
 ---
 
-# 👩‍💻 Author
+# Author
 
-**Sanjana**
+**Sanjana V Hathwar**
 
-Computer Science & Engineering
+Computer Science and Engineering
 
 GitHub:
 
@@ -467,25 +726,47 @@ https://github.com/sanjanaa-10
 
 ---
 
-## ⭐ Project Highlights
-
-```text
-✓ Chrome Browser Extension
-✓ XGBoost Machine Learning
-✓ 22 Security Features
-✓ FastAPI Backend
-✓ SHAP Explainable AI
-✓ Real-Time Risk Scoring
-✓ LOW / MEDIUM / HIGH Classification
-✓ Security Signals
-✓ Scan History
-✓ Automated Browser Alerts
-```
-
----
-
-## 📌 Repository
+# Repository
 
 GitHub:
 
 https://github.com/sanjanaa-10/phisyy
+
+---
+
+# Project Summary
+
+Phisyy demonstrates a complete machine-learning-assisted browser security workflow:
+
+```text
+Chrome Extension
+       |
+       v
+Website Feature Extraction
+       |
+       v
+22 Security Features
+       |
+       v
+Feature Scaling
+       |
+       v
+XGBoost Classification
+       |
+       v
+Prediction Probabilities
+       |
+       v
+Threat Score
+       |
+       v
+Risk Classification
+       |
+       v
+SHAP Explainability
+       |
+       v
+Browser Security Dashboard
+```
+
+The project combines **cybersecurity, machine learning, explainable AI, backend API development, and browser extension development** into a single working application.
