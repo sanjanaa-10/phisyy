@@ -137,3 +137,24 @@ Suspicious websites can trigger an in-page Phisyy security notification with opt
                  │                      │
                  │ LOW / MEDIUM / HIGH  │
                  └──────────────────────┘
+              ---
+
+## 🚀 Installation & Usage
+
+### Prerequisites
+
+Make sure you have:
+
+- Google Chrome
+- Python 3.x
+- Git
+
+---
+
+### 1. Clone the Repository
+
+Open PowerShell or Terminal:
+
+```bash
+git clone https://github.com/sanjanaa-10/phisyy.git
+cd phisyy   
