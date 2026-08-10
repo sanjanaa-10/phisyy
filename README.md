@@ -1,61 +1,139 @@
-# Phishing Detection Chrome Extension using Machine Learning
-This project is a browser-based phishing detection system implemented as a Chrome Extension that leverages machine learning models to identify and block phishing websites in real-time. It is part of a research initiative focused on enhancing web security through intelligent URL and content-based analysis.
+# 🐟 Phisyy
 
-**🚀 Features**
+### ML-Powered Browser Phishing Detection Extension
 
-  🔍 Real-time detection of phishing URLs while browsing
+Phisyy is a Chrome browser security extension that analyzes websites in real time and identifies potentially suspicious or phishing pages using machine learning.
 
-  🧠 Backend powered by an optimized XGBoost machine learning model with 98.5% accuracy
+It combines **XGBoost-based classification**, **URL/webpage security features**, and **SHAP explainability** to provide an interpretable risk assessment directly inside the browser.
 
-  📦 Lightweight frontend Chrome extension with clean UI
+---
 
-  📈 Extracts over 30 handcrafted features from the webpage and URL
+## 🚨 Why Phisyy?
 
-  ⚡ FastAPI-based backend server for model inference
+Phishing websites can look almost identical to legitimate websites.
 
-  🔗 REST API integration between extension and ML model
+Instead of relying only on blacklists, Phisyy analyzes multiple characteristics of a website and produces a risk assessment:
 
-  🔐 Privacy-friendly (no user data is stored)
+- 🟢 LOW RISK
+- 🟡 MEDIUM RISK
+- 🔴 HIGH RISK
 
-**📂 Project Structure**
-  📁 frontend/ – Chrome extension frontend (HTML + JS)
-  📁 backend/ – Python backend with FastAPI and XGBoost model
+The extension also explains the security signals contributing to the prediction.
 
-app.py: API endpoints
+---
 
-url_feature_extractor.py: Feature engineering logic
+## ✨ Features
 
-best_xgb_model.pkl: Trained ML model
+### 🔍 Real-Time Website Analysis
+Analyzes the currently opened website and generates a phishing risk assessment.
 
-📁 dataset/ – Phishing & legitimate URL dataset (for training)
+### 🤖 Machine Learning Detection
+Uses an **XGBoost binary classification model** for phishing/legitimate website prediction.
 
-📁 notebook/ – Model training & evaluation notebooks
+### 📊 22 Security Features
+The model uses URL and webpage-derived security characteristics including:
 
-**🛠️ Technologies Used**
-  Machine Learning: XGBoost, Scikit-learn
+- URL length
+- Domain length
+- TLD length
+- Number of images
+- Number of JavaScript files
+- Number of CSS files
+- Self references
+- External references
+- HTTPS usage
+- URL obfuscation
+- Page title
+- Page description
+- Submit buttons
+- Social network indicators
+- Favicon
+- Copyright information
+- Popup windows
+- Iframes
+- Abnormal URL indicators
+- Letter-to-digit ratio
+- Redirect indicators
 
-  Web: JavaScript, HTML, Chrome APIs
+### 🧠 Explainable AI
 
-  Backend: Python, FastAPI
+Phisyy integrates **SHAP** to provide explanations for model predictions and identify important security signals.
 
-  Tools: Pandas, NumPy, Joblib
+### ⚠️ Risk Scoring
 
-**🧪 How It Works**
-  The user visits a website.
+The phishing probability is converted into a threat score from **0–100**.
 
-  The extension captures the URL and webpage data.
+| Threat Score | Risk |
+|---|---|
+| 0–29 | 🟢 LOW |
+| 30–69 | 🟡 MEDIUM |
+| 70–100 | 🔴 HIGH |
 
-  Extracted features are sent to the FastAPI backend.
+### 📋 Security Dashboard
 
-  The trained ML model predicts whether the URL is phishing or safe.
+The browser popup displays:
 
-  The result is displayed to the user in real-time.
+- Current website
+- Risk level
+- Threat score
+- Legitimate probability
+- Phishing probability
+- Security signals
+- Recent scan history
 
-**🎓 Project Context**
-This extension is the implementation part of a research project on phishing detection using machine learning. The goal is to build a practical, scalable solution for securing users against phishing attacks during regular browsing.
+### 🔔 Browser Security Alerts
 
-📜 License
-This project is open-source and available under the MIT License.
+Suspicious websites can trigger an in-page Phisyy security notification with options to review the result or close the suspicious tab.
 
-**If you want to use this just download it as a zip and then unzip it in your computer and enable the developer mode in chrome under the extension and load unpacked the Frontend Folder there pin it and you are ready to go**
+---
 
+## 🏗️ Architecture
+
+```text
+                 ┌──────────────────────┐
+                 │      Web Browser     │
+                 │       Chrome         │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │   Phisyy Extension   │
+                 │                      │
+                 │ Popup + Background   │
+                 │ Security Monitoring  │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │  Feature Extraction  │
+                 │                      │
+                 │ URL + Webpage Data  │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │     FastAPI API      │
+                 │                      │
+                 │  Model Inference     │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │   XGBoost Model      │
+                 │                      │
+                 │ Phishing Prediction  │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │   SHAP Explainability│
+                 │                      │
+                 │ Security Signals     │
+                 └──────────┬───────────┘
+                            │
+                            ▼
+                 ┌──────────────────────┐
+                 │   Risk Assessment    │
+                 │                      │
+                 │ LOW / MEDIUM / HIGH  │
+                 └──────────────────────┘
