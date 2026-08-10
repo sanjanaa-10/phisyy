@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phisyy Security</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo">🐟</div>
+
+        <div>
+          <h1>Phisyy</h1>
+          <p>Catch the phish before you click.</p>
+        </div>
+      </div>
+
+      <div
+        class="status-dot"
+        title="Phisyy is active"
+      ></div>
+    </header>
+
+
+    <!-- Current Website -->
+    <section class="website-card">
+      <div class="section-label">
+        CURRENT WEBSITE
+      </div>
+
+      <div
+        id="currentUrl"
+        class="current-url"
+      >
+        Getting current website...
+      </div>
+    </section>
+
+
+    <!-- Loading -->
+    <section
+      id="loading"
+      class="loading-card"
+    >
+      <div class="loader"></div>
+
+      <div>
+        <strong>
+          Analyzing website
+        </strong>
+
+        <span>
+          Checking security signals...
+        </span>
+      </div>
+    </section>
+
+
+    <!-- Result -->
+    <section
+      id="result"
+      class="result-card"
+    ></section>
+
+
+    <!-- Security Signals -->
+    <section
+      id="signals"
+      class="signals-card"
+    >
+
+      <div class="section-title">
+        <span>
+          Security Signals
+        </span>
+      </div>
+
+      <div id="signalList"></div>
+
+    </section>
+
+
+    <!-- Recent Scans -->
+    <section class="history-card">
+
+      <div class="section-title">
+
+        <span>
+          Recent Scans
+        </span>
+
+        <span class="history-label">
+          Latest
+        </span>
+
+      </div>
+
+      <div id="history"></div>
+
+    </section>
+
+
+    <!-- Footer -->
+    <footer>
+      <span>
+        Phisyy Security Engine
+      </span>
+
+      <span>•</span>
+
+      <span>
+        ML-powered
+      </span>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+
+</body>
+</html>

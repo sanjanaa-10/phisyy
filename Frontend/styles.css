@@ -1,0 +1,543 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 380px;
+  min-height: 500px;
+
+  background: #f6f8fb;
+  color: #172033;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.app {
+  padding: 18px;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.logo {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: #172033;
+  font-size: 21px;
+
+  box-shadow: 0 4px 12px rgba(23, 32, 51, 0.15);
+}
+
+.brand h1 {
+  margin: 0;
+
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+}
+
+.brand p {
+  margin: 3px 0 0;
+
+  color: #748096;
+  font-size: 10px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+
+  box-shadow: 0 0 0 4px #dcfce7;
+}
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.website-card,
+.result-card,
+.signals-card,
+.history-card {
+  background: #ffffff;
+
+  border: 1px solid #e6eaf0;
+  border-radius: 15px;
+
+  margin-bottom: 12px;
+
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.website-card {
+  padding: 14px;
+}
+
+.section-label {
+  color: #8a94a6;
+
+  font-size: 9px;
+  font-weight: 750;
+
+  letter-spacing: 1.1px;
+
+  margin-bottom: 7px;
+}
+
+.current-url {
+  color: #334155;
+
+  font-size: 12px;
+  line-height: 1.45;
+
+  word-break: break-all;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading-card {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 15px;
+
+  margin-bottom: 12px;
+
+  border-radius: 15px;
+
+  background: #eef4ff;
+  border: 1px solid #dce8ff;
+}
+
+.loading-card strong,
+.loading-card span {
+  display: block;
+}
+
+.loading-card strong {
+  font-size: 12px;
+}
+
+.loading-card span {
+  margin-top: 3px;
+
+  color: #718096;
+  font-size: 10px;
+}
+
+.loader {
+  width: 22px;
+  height: 22px;
+
+  border: 3px solid #d8e3f8;
+  border-top-color: #2563eb;
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   RESULT
+========================================================= */
+
+.result-card {
+  padding: 18px;
+  text-align: center;
+}
+
+.result-icon {
+  font-size: 30px;
+  margin-bottom: 7px;
+}
+
+.result-title {
+  margin: 0;
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.result-description {
+  margin: 7px auto 0;
+
+  max-width: 280px;
+
+  color: #718096;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   RISK STATES
+========================================================= */
+
+.safe-result {
+  border-top: 4px solid #22c55e;
+}
+
+.safe-result .result-title {
+  color: #15803d;
+}
+
+.warning-result {
+  border-top: 4px solid #f59e0b;
+}
+
+.warning-result .result-title {
+  color: #b45309;
+}
+
+.phishing-result {
+  border-top: 4px solid #ef4444;
+}
+
+.phishing-result .result-title {
+  color: #dc2626;
+}
+
+.error-result {
+  border-top: 4px solid #f59e0b;
+}
+
+.error-result .result-title {
+  color: #d97706;
+}
+
+/* =========================================================
+   SCORE
+========================================================= */
+
+.score {
+  margin-top: 12px;
+
+  padding-top: 10px;
+
+  border-top: 1px solid #eef1f5;
+
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+.score strong {
+  margin-left: 4px;
+
+  color: #172033;
+
+  font-size: 15px;
+}
+
+/* =========================================================
+   PROBABILITIES
+========================================================= */
+
+.probabilities {
+  margin-top: 14px;
+
+  padding: 11px 12px;
+
+  background: #f8fafc;
+
+  border: 1px solid #e8edf3;
+
+  border-radius: 10px;
+}
+
+.probability-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 4px 0;
+
+  font-size: 10px;
+
+  color: #64748b;
+}
+
+.probability-row strong {
+  color: #172033;
+  font-size: 10px;
+}
+
+/* =========================================================
+   SIGNALS
+========================================================= */
+
+.signals-card {
+  padding: 15px;
+}
+
+.section-title {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+}
+
+.section-title > span:first-child {
+  font-size: 11px;
+
+  font-weight: 800;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.7px;
+}
+
+.history-label {
+  color: #94a3b8;
+  font-size: 9px;
+}
+
+/* =========================================================
+   SIGNAL ROW
+========================================================= */
+
+.signal {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 8px 0;
+
+  border-bottom: 1px solid #f0f2f5;
+
+  font-size: 11px;
+}
+
+.signal:last-child {
+  border-bottom: none;
+}
+
+.signal-icon {
+  width: 23px;
+  height: 23px;
+
+  border-radius: 7px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 11px;
+
+  flex-shrink: 0;
+}
+
+.signal-good {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.signal-warning {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.signal-danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.signal > span {
+  color: #475569;
+
+  font-size: 10px;
+
+  line-height: 1.4;
+}
+
+/* =========================================================
+   SHAP EXPLANATIONS
+========================================================= */
+
+.signal-content {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+
+  min-width: 0;
+}
+
+.signal-content strong {
+  color: #1e293b;
+
+  font-size: 10px;
+
+  font-weight: 750;
+}
+
+.signal-content span {
+  color: #64748b;
+
+  font-size: 9px;
+}
+
+.signal-content small {
+  color: #94a3b8;
+
+  font-size: 8px;
+}
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+.history-card {
+  padding: 15px;
+}
+
+.history-entry {
+  padding: 10px 0;
+
+  border-bottom: 1px solid #eef1f5;
+}
+
+.history-entry:last-child {
+  border-bottom: none;
+}
+
+.history-main {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+.history-status {
+  font-size: 10px;
+
+  font-weight: 750;
+}
+
+.history-status.safe {
+  color: #15803d;
+}
+
+.history-status.phishing {
+  color: #dc2626;
+}
+
+.history-status.warning {
+  color: #b45309;
+}
+
+.report-link {
+  color: #64748b;
+
+  font-size: 9px;
+
+  text-decoration: none;
+}
+
+.report-link:hover {
+  text-decoration: underline;
+}
+
+.history-url {
+  margin-top: 4px;
+
+  color: #64748b;
+
+  font-size: 10px;
+
+  line-height: 1.35;
+
+  word-break: break-all;
+}
+
+.history-time {
+  margin-top: 3px;
+
+  color: #a0a8b5;
+
+  font-size: 9px;
+}
+
+/* =========================================================
+   EMPTY HISTORY
+========================================================= */
+
+.empty-history {
+  color: #94a3b8;
+
+  padding: 8px 0;
+
+  font-size: 10px;
+
+  text-align: center;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+footer {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 6px;
+
+  margin-top: 15px;
+
+  color: #9aa4b2;
+
+  font-size: 8px;
+}
