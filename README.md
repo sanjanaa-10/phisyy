@@ -2,9 +2,27 @@
 
 ## ML-Powered Browser Phishing Detection Extension
 
+[![Backend CI](https://github.com/sanjanaa-10/phisyy/actions/workflows/ci.yml/badge.svg)](https://github.com/sanjanaa-10/phisyy/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Phisyy is a Chrome browser security extension that analyzes websites in real time and identifies potentially suspicious or phishing pages using machine learning.
 
 The system combines an XGBoost classification model, URL and webpage-derived security features, a FastAPI inference backend, and SHAP-based explainability to provide an interpretable website risk assessment directly inside the browser.
+
+---
+
+## Demo
+
+<!--
+  Add a screenshot or short GIF of the popup dashboard here, e.g.:
+  ![Phisyy popup showing risk level, threat score, and security signals](docs/demo.png)
+
+  Quick way to capture one:
+  1. Load the extension (see "Chrome Extension Setup" below) and run the backend.
+  2. Open any site, click the Phisyy icon, and screenshot the popup once results load.
+  3. Save the image as docs/demo.png (or demo.gif for a short click-through) and
+     replace this comment with the markdown image line above.
+-->
 
 ---
 

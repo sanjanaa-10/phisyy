@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+import os
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
@@ -22,14 +24,30 @@ app = FastAPI(
 
 # ============================================================
 # CORS
+#
+# The extension calls this API directly (no cookies/session
+# auth involved), so credentials are not needed and origins
+# are restricted instead of wildcarded. Set PHISYY_ALLOWED_ORIGINS
+# to your loaded extension's origin, e.g.:
+#   chrome-extension://<your-extension-id>
+# after loading the unpacked extension in chrome://extensions.
 # ============================================================
+
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "PHISYY_ALLOWED_ORIGINS",
+        "http://127.0.0.1:8000,http://localhost:8000",
+    ).split(",")
+    if origin.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 
@@ -324,9 +342,10 @@ def predict(features: URLFeatures):
 
     except Exception as e:
 
-        return {
-            "error": str(e),
-        }
+        raise HTTPException(
+            status_code=500,
+            detail=f"Model inference failed: {e}",
+        )
 
 
 # ============================================================
@@ -347,9 +366,10 @@ def predict_from_url(
         url = input_data.url.strip()
 
         if not url:
-            return {
-                "error": "URL cannot be empty.",
-            }
+            raise HTTPException(
+                status_code=422,
+                detail="URL cannot be empty.",
+            )
 
         # Add HTTPS if protocol is missing
         if not url.startswith(
@@ -365,17 +385,23 @@ def predict_from_url(
             url,
         )
 
+        # If the page couldn't be fetched, stop here instead of
+        # silently scoring a feature vector built from empty/zero
+        # defaults (the model would otherwise return a confident-
+        # looking prediction for a page it never actually saw).
+        if extractor.page_fetch_failed:
+
+            raise HTTPException(
+                status_code=502,
+                detail=(
+                    f"Could not fetch the target page: "
+                    f"{extractor.page_fetch_error}"
+                ),
+            )
+
         features = (
             extractor.extract_model_features()
         )
-
-        # If webpage extraction failed
-        if "error" in features:
-
-            return {
-                "url": url,
-                "error": features["error"],
-            }
 
         # ----------------------------------------------------
         # Run trained XGBoost model
@@ -404,11 +430,16 @@ def predict_from_url(
             **model_result,
         }
 
+    except HTTPException:
+        # Already has the right status code (422/502 above) — just re-raise.
+        raise
+
     except Exception as e:
 
-        return {
-            "error": str(e),
-        }
+        raise HTTPException(
+            status_code=500,
+            detail=f"Model inference failed: {e}",
+        )
 
 
 # ============================================================
