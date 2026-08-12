@@ -1,8 +1,14 @@
-@"
-venv/
+# Dataset
+backend/PhiUSIIL_Phishing_URL_Dataset.csv
+
+# Python
 __pycache__/
 *.pyc
+
+# Environment
+.venv/
+venv/
 .env
-*.log
-.vscode/
-"@ | Set-Content .gitignore
+
+# Test/cache
+.pytest_cache/

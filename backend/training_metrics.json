@@ -1,0 +1,69 @@
+{
+  "dataset": "PhiUSIIL",
+  "candidate_sample_size": 5000,
+  "successful_samples": 3571,
+  "failed_samples": 1429,
+  "balanced_training_samples": 2634,
+  "features": 22,
+  "feature_names": [
+    "URLLength",
+    "DomainLength",
+    "TLDLength",
+    "NoOfImage",
+    "NoOfJS",
+    "NoOfCSS",
+    "NoOfSelfRef",
+    "NoOfExternalRef",
+    "IsHTTPS",
+    "HasObfuscation",
+    "HasTitle",
+    "HasDescription",
+    "HasSubmitButton",
+    "HasSocialNet",
+    "HasFavicon",
+    "HasCopyrightInfo",
+    "popUpWindow",
+    "Iframe",
+    "Abnormal_URL",
+    "LetterToDigitRatio",
+    "Redirect_0",
+    "Redirect_1"
+  ],
+  "model": "XGBoost",
+  "scaler": "StandardScaler",
+  "random_state": 42,
+  "fetch_statistics": {
+    "attempted": 5000,
+    "successful": 3571,
+    "failed": 1429,
+    "attempted_by_label": {
+      "phishing": 2500,
+      "legitimate": 2500
+    },
+    "successful_by_label": {
+      "phishing": 1317,
+      "legitimate": 2254
+    },
+    "failed_by_label": {
+      "phishing": 1183,
+      "legitimate": 246
+    }
+  },
+  "metrics": {
+    "accuracy": 0.9848197343453511,
+    "precision": 0.9775280898876404,
+    "recall": 0.9923954372623575,
+    "f1": 0.9849056603773585,
+    "roc_auc": 0.9985021315819794,
+    "confusion_matrix": [
+      [
+        258,
+        6
+      ],
+      [
+        2,
+        261
+      ]
+    ]
+  }
+}

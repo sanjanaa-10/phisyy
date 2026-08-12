@@ -1,9 +1,15 @@
 import re
 import requests
+import warnings
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from urllib.parse import urlparse, urljoin
 from tld import get_tld
+
+warnings.filterwarnings(
+    "ignore",
+    category=XMLParsedAsHTMLWarning
+)
 
 
 class URLFeatureExtractor:
