@@ -1,10 +1,12 @@
 {
-  "dataset": "PhiUSIIL",
-  "candidate_sample_size": 5000,
-  "successful_samples": 3571,
-  "failed_samples": 1429,
-  "balanced_training_samples": 2634,
-  "features": 22,
+  "dataset": "PhiUSIIL (stored features, offline) + curated legit long URLs + synthetic suspicious long URLs",
+  "training_mode": "offline-no-network",
+  "rows": 6063,
+  "legit_rows": 3043,
+  "phish_rows": 3020,
+  "curated_legit_long_urls": 30,
+  "synthetic_suspicious_urls": 20,
+  "features": 25,
   "feature_names": [
     "URLLength",
     "DomainLength",
@@ -27,42 +29,29 @@
     "Abnormal_URL",
     "LetterToDigitRatio",
     "Redirect_0",
-    "Redirect_1"
+    "Redirect_1",
+    "FetchFailed",
+    "DomainAgeDays",
+    "DomainAgeUnknown"
   ],
   "model": "XGBoost",
   "scaler": "StandardScaler",
   "random_state": 42,
-  "fetch_statistics": {
-    "attempted": 5000,
-    "successful": 3571,
-    "failed": 1429,
-    "attempted_by_label": {
-      "phishing": 2500,
-      "legitimate": 2500
-    },
-    "successful_by_label": {
-      "phishing": 1317,
-      "legitimate": 2254
-    },
-    "failed_by_label": {
-      "phishing": 1183,
-      "legitimate": 246
-    }
-  },
+  "training_rounds_used": 496,
   "metrics": {
-    "accuracy": 0.9848197343453511,
-    "precision": 0.9775280898876404,
-    "recall": 0.9923954372623575,
-    "f1": 0.9849056603773585,
-    "roc_auc": 0.9985021315819794,
+    "accuracy": 0.9967023907666942,
+    "precision": 0.9967159277504105,
+    "recall": 0.9967159277504105,
+    "f1": 0.9967159277504105,
+    "roc_auc": 0.999978251177155,
     "confusion_matrix": [
       [
-        258,
-        6
+        602,
+        2
       ],
       [
         2,
-        261
+        607
       ]
     ]
   }

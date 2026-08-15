@@ -2,7 +2,7 @@
 // PHISYY - Browser Security Background Service
 // ============================================================
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://phisyy-api.onrender.com";
 const MAX_HISTORY_ITEMS = 10;
 const tabStates = new Map();
 const inFlightScans = new Map();

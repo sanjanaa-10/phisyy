@@ -20,5 +20,8 @@
   "Abnormal_URL",
   "LetterToDigitRatio",
   "Redirect_0",
-  "Redirect_1"
+  "Redirect_1",
+  "FetchFailed",
+  "DomainAgeDays",
+  "DomainAgeUnknown"
 ]

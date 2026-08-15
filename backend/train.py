@@ -19,6 +19,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from url_feature_extractor import URLFeatureExtractor
+from legit_long_urls import CURATED_LEGIT_LONG_URLS
 
 
 # ============================================================
@@ -55,6 +56,9 @@ FEATURE_COLUMNS = [
     "LetterToDigitRatio",
     "Redirect_0",
     "Redirect_1",
+    "FetchFailed",
+    "DomainAgeDays",
+    "DomainAgeUnknown",
 ]
 
 
@@ -77,18 +81,24 @@ def extract_features(row):
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
 
+    # Curated rows (the legit long-URL examples added to fix the
+    # length bias) are tagged so balancing always keeps them.
+    is_curated = bool(row.get("curated", False))
+
     try:
 
         extractor = URLFeatureExtractor(url)
 
-        if extractor.page_fetch_failed:
-            return {
-                "success": False,
-                "label": label,
-                "url": url,
-                "reason": extractor.page_fetch_error,
-            }
-
+        # A failed page fetch is NOT discarded anymore. It's a real,
+        # informative outcome (see FetchFailed in url_feature_extractor.py)
+        # and dropping these rows was badly skewing the training set:
+        # phishing URLs failed to fetch far more often than legitimate
+        # ones, so the model only ever learned from the minority of
+        # phishing sites that were still alive and fully loadable.
+        # extract_model_features() already returns sensible defaults
+        # (mostly 0) for page-structure features when there's no page,
+        # while URL-only features (length, HTTPS, TLD, etc.) are still
+        # computed normally.
         features = extractor.extract_model_features()
 
         return {
@@ -96,10 +106,14 @@ def extract_features(row):
             "label": label,
             "url": url,
             "features": features,
+            "fetch_failed": extractor.page_fetch_failed,
+            "curated": is_curated,
         }
 
     except Exception as exc:
 
+        # Only genuine crashes (malformed URL the parser can't
+        # handle at all, etc.) are discarded now.
         return {
             "success": False,
             "label": label,
@@ -205,6 +219,29 @@ def build_feature_dataset(df, workers=8):
         .to_dict()
     )
 
+    # NOTE: "successful" here means feature extraction succeeded,
+    # which now includes URLs whose page failed to load (those get
+    # FetchFailed=1 instead of being thrown away). page_fetch_failed_by_label
+    # tracks, separately, how many of the *kept* rows had no live page -
+    # this is the number that used to just vanish from the dataset.
+    page_fetch_failed = [
+        result
+        for result in successful
+        if result.get("fetch_failed")
+    ]
+
+    page_fetch_failed_by_label = (
+        pd.Series(
+            [
+                result["label"]
+                for result in page_fetch_failed
+            ]
+        )
+        .value_counts()
+        .sort_index()
+        .to_dict()
+    )
+
     for label in [0, 1]:
 
         attempted_by_label.setdefault(
@@ -218,6 +255,11 @@ def build_feature_dataset(df, workers=8):
         )
 
         failed_by_label.setdefault(
+            label,
+            0
+        )
+
+        page_fetch_failed_by_label.setdefault(
             label,
             0
         )
@@ -252,6 +294,19 @@ def build_feature_dataset(df, workers=8):
         f"{len(failed):6d}"
     )
 
+    print(
+        "\n(Of the successful rows above, these had no live page and "
+        "were kept with FetchFailed=1 rather than discarded:)"
+    )
+
+    print(
+        f"  Legitimate: {page_fetch_failed_by_label[1]}"
+    )
+
+    print(
+        f"  Phishing:   {page_fetch_failed_by_label[0]}"
+    )
+
     if not successful:
 
         raise RuntimeError(
@@ -273,6 +328,10 @@ def build_feature_dataset(df, workers=8):
         "failed_by_label": {
             "phishing": failed_by_label[0],
             "legitimate": failed_by_label[1],
+        },
+        "page_fetch_failed_by_label": {
+            "phishing": page_fetch_failed_by_label[0],
+            "legitimate": page_fetch_failed_by_label[1],
         },
     }
 
@@ -321,6 +380,38 @@ def balance_successful_results(results):
             "extracted. Cannot train a binary model."
         )
 
+    # Curated legit long-URL examples (injected to fix the length
+    # bias) must never be truncated away by balancing, or the model
+    # reverts to learning "long URL => phishing" from the skewed
+    # PhiUSIIL distribution. Split them out, reserve a slot for each,
+    # then fill the remaining legit slots deterministically.
+    curated = [
+        result
+        for result in legitimate
+        if result.get("curated")
+    ]
+
+    regular = [
+        result
+        for result in legitimate
+        if not result.get("curated")
+    ]
+
+    print(
+        f"\nCurated legit long-URL examples "
+        f"retained: {len(curated)}"
+    )
+
+    # Reserve room for the curated rows in the legitimate budget.
+    legit_budget = max(
+        target_count - len(curated),
+        0
+    )
+
+    regular = regular[:legit_budget]
+
+    legitimate = curated + regular
+
     # Deterministic selection.
     phishing = phishing[:target_count]
     legitimate = legitimate[:target_count]
@@ -351,7 +442,8 @@ def balance_successful_results(results):
     )
 
     print(
-        f"Legitimate: {target_count}"
+        f"Legitimate: {len(legitimate)} "
+        f"({len(curated)} curated long-URL examples)"
     )
 
     print(
@@ -373,36 +465,93 @@ def balance_successful_results(results):
 # ============================================================
 
 def train_model(X_train, y_train):
+    """
+    Fits the scaler on X_train only, then carves an internal
+    validation split out of the training rows so XGBoost can
+    early-stop instead of always running the full 200 rounds.
+
+    On ~4-5k rows / 22 features, an unregularized depth-6 booster
+    trained for a fixed 200 rounds tends to memorize incidental,
+    non-causal splits (e.g. a sharp cliff at one exact DomainLength
+    value) rather than general signal. Shrinking max_depth, adding
+    L1/L2 regularization + min_child_weight, and stopping on a held
+    -out validation curve directly targets that overfitting.
+    """
 
     scaler = StandardScaler()
 
-    X_train_scaled = scaler.fit_transform(
-        X_train
+    # Held-out validation split, carved from the training data only
+    # (X_test/y_test from main() stays fully unseen until evaluate_model).
+    X_fit, X_val, y_fit, y_val = train_test_split(
+        X_train,
+        y_train,
+        test_size=0.15,
+        stratify=y_train,
+        random_state=42,
     )
 
-    dtrain = xgb.DMatrix(
-        X_train_scaled,
-        label=y_train,
+    X_fit_scaled = scaler.fit_transform(X_fit)
+    X_val_scaled = scaler.transform(X_val)
+
+    dfit = xgb.DMatrix(
+        X_fit_scaled,
+        label=y_fit,
+        feature_names=FEATURE_COLUMNS,
+    )
+
+    dval = xgb.DMatrix(
+        X_val_scaled,
+        label=y_val,
         feature_names=FEATURE_COLUMNS,
     )
 
     params = {
         "objective": "binary:logistic",
         "eval_metric": "logloss",
-        "max_depth": 6,
+        "max_depth": 4,              # was 6 - shallower trees generalize better on small data
+        "min_child_weight": 5,       # requires more samples per leaf before splitting
         "learning_rate": 0.05,
         "subsample": 0.8,
         "colsample_bytree": 0.8,
+        "reg_alpha": 0.5,            # L1 - encourages sparser, less noisy splits
+        "reg_lambda": 2.0,           # L2 - shrinks leaf weights, softens cliff-like jumps
+        "gamma": 0.5,                # minimum loss reduction required to split at all
         "seed": 42,
     }
 
     booster = xgb.train(
         params=params,
-        dtrain=dtrain,
-        num_boost_round=200,
+        dtrain=dfit,
+        num_boost_round=500,
+        evals=[(dfit, "train"), (dval, "val")],
+        early_stopping_rounds=30,    # stop once val logloss stops improving
+        verbose_eval=False,
     )
 
-    return booster, scaler
+    print(
+        f"\nEarly stopping selected "
+        f"{booster.best_iteration + 1} rounds "
+        f"(best val-logloss: {booster.best_score:.4f})"
+    )
+
+    # Refit the scaler on the FULL training set (fit + val) now that
+    # the round count is chosen, so no data is wasted at inference time.
+    final_scaler = StandardScaler()
+    X_train_scaled = final_scaler.fit_transform(X_train)
+
+    dtrain_full = xgb.DMatrix(
+        X_train_scaled,
+        label=y_train,
+        feature_names=FEATURE_COLUMNS,
+    )
+
+    final_booster = xgb.train(
+        params=params,
+        dtrain=dtrain_full,
+        num_boost_round=booster.best_iteration + 1,
+    )
+
+    return final_booster, final_scaler
 
 
 # ============================================================
@@ -627,6 +776,27 @@ def main():
         ]
     )
 
+    # Inject the curated legitimate long-URL examples so the model
+    # learns that long URLs (article permalinks, search results,
+    # product pages, OAuth redirects) are normal for legit sites.
+    curated_df = pd.DataFrame(
+        [
+            {
+                "URL": url,
+                "label": 1,
+                "curated": True,
+            }
+            for url in CURATED_LEGIT_LONG_URLS
+        ]
+    )
+
+    sample_df = pd.concat(
+        [
+            sample_df,
+            curated_df
+        ]
+    )
+
     sample_df = sample_df.sample(
         frac=1,
         random_state=42
@@ -635,7 +805,8 @@ def main():
     print(
         f"URLs selected for "
         f"feature extraction: "
-        f"{len(sample_df)}"
+        f"{len(sample_df)} "
+        f"({len(curated_df)} curated legit long-URL examples)"
     )
 
     print(
@@ -770,6 +941,9 @@ def main():
         "candidate_sample_size":
             len(sample_df),
 
+        "curated_legit_long_urls":
+            len(curated_df),
+
         "successful_samples":
             fetch_stats["successful"],
 
@@ -796,6 +970,18 @@ def main():
 
         "fetch_statistics":
             fetch_stats,
+
+        "training_rounds_used":
+            booster.num_boosted_rounds(),
+
+        "regularization": {
+            "max_depth": 4,
+            "min_child_weight": 5,
+            "reg_alpha": 0.5,
+            "reg_lambda": 2.0,
+            "gamma": 0.5,
+            "early_stopping_rounds": 30,
+        },
 
         "metrics":
             metrics

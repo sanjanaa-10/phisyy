@@ -94,6 +94,9 @@ FEATURE_COLUMNS = [
     "LetterToDigitRatio",
     "Redirect_0",
     "Redirect_1",
+    "FetchFailed",
+    "DomainAgeDays",
+    "DomainAgeUnknown",
 ]
 
 
@@ -124,6 +127,9 @@ class URLFeatures(BaseModel):
     LetterToDigitRatio: float
     Redirect_0: int
     Redirect_1: int
+    FetchFailed: int
+    DomainAgeDays: int
+    DomainAgeUnknown: int
 
 
 class URLInput(BaseModel):
@@ -385,23 +391,18 @@ def predict_from_url(
             url,
         )
 
-        # If the page couldn't be fetched, stop here instead of
-        # silently scoring a feature vector built from empty/zero
-        # defaults (the model would otherwise return a confident-
-        # looking prediction for a page it never actually saw).
-        if extractor.page_fetch_failed:
-
-            raise HTTPException(
-                status_code=502,
-                detail=(
-                    f"Could not fetch the target page: "
-                    f"{extractor.page_fetch_error}"
-                ),
-            )
-
+        # A failed page fetch is no longer treated as "can't score
+        # this" - the retrained model was trained with FetchFailed
+        # as an explicit feature, since a dead/blocked/timed-out
+        # page is itself a meaningful signal (phishing infrastructure
+        # fails to load far more often than legitimate sites). We
+        # still surface the fetch status in the response so the user
+        # knows the page didn't actually load.
         features = (
             extractor.extract_model_features()
         )
+
+        fetch_status = extractor.get_fetch_status()
 
         # ----------------------------------------------------
         # Run trained XGBoost model
@@ -427,11 +428,12 @@ def predict_from_url(
             "url": url,
             "features": features,
             "explanations": explanations,
+            "fetch_status": fetch_status,
             **model_result,
         }
 
     except HTTPException:
-        # Already has the right status code (422/502 above) — just re-raise.
+        # Already has the right status code (422 above) — just re-raise.
         raise
 
     except Exception as e:
