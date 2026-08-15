@@ -470,7 +470,7 @@ def model_info():
     return {
         "model": "XGBoost",
         "objective": "binary:logistic",
-        "trees": 200,
+        "trees": booster.num_boosted_rounds(),
         "features": len(FEATURE_COLUMNS),
         "feature_names": FEATURE_COLUMNS,
         "scaler": "StandardScaler",
